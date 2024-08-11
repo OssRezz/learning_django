@@ -300,3 +300,124 @@ http://127.0.0.1:8000/car-list
 
 
 
+# Crear un archivo de URLS
+
+1. En el raiz de nuestra aplicación, creamos un archivo llamado urls.py y dentro de el importamos HttpResponse y path, creamos una lista ulrpatterns y en este declaramos nuestra rutas.
+
+    ```
+    from django.http import HttpResponse
+    from django.urls import path
+
+
+    def my_view(request, *args, **kwargs):
+        print(args)
+        print(kwargs)
+        return HttpResponse("")
+
+
+    urlpatterns = [
+        path("listado", my_view),
+        path("detalle/<int:id>", my_view)
+    ]
+    ```
+
+
+2. Ahora vamos a agregar nuestro nuevo archivo de rutas, para esto vamos al archivo urls.py del proyecto pricipal:
+   
+   1. Importamos de django.urls el metodo llamado include
+
+        ```
+        from django.urls import path, include
+        ```
+
+   2. En urlpatterns, dentro del metodo path, agregamos como primer parametro nuestra ruta del modúlo en este caso "carros", como segundo parametro, vamos a incluir el archivo nuevo de rutas, que seria el nombre de la aplicación y el archivo que contiene las nuevas URLS. (**aplicacion.archivo_urls**)
+
+        ```
+        urlpatterns = [
+            path('admin/', admin.site.urls),
+            path('carros/', include('my_first_app.urls'))
+        ]
+        ```
+
+
+3. Con esto ya deberiamos poder ingresar a las rutas declaradas en el punto 1 por ejm:
+
+    - url_server/carros/listado
+    - url_server/carros/detalle/1
+
+
+
+# Vistas basadas en clases
+
+1. En la aplicacion vamos al archivo llamado views.py, dentro de esta vamos a importar TemplateView
+2. Creamos una clase y heredamos de TemplateView
+3. Esta clase requiere de dos pasos para poder renderizar las vistas
+    
+   1. La vista a la cual vamos a redirigir, para esto declaramos una variable llamada template_name
+   
+   2. el contexto que se va a enviar a la vista, para esto creamos una funcion get_context_data y retornamos el valor deseado.
+   
+4. Para este punto el archivo views.py se deberia ver de esta manera
+
+    ```
+    from django.shortcuts import render
+    from django.http import HttpResponse
+    from django.views.generic.base import TemplateView
+
+    # Create your views here.
+    from django.shortcuts import render
+    from django.http import HttpResponse
+    from django.views.generic.base import TemplateView
+
+    class CarListView(TemplateView):
+        template_name = "my_firts_app/car_list.html"
+
+        def get_context_data(self):
+            car_list = [
+                {"title": "BMW"},
+                {"title": "Manza"},
+            ]
+
+            return {
+                "car_list": car_list
+            }
+
+    ```
+
+5. Finalmente debemos decirle a nuestra ruta que va a usar una vista basada en clases
+
+   - Importamos desde .views la clase CarListView
+   - en nuestra ruta, debemos agregar como segundo parametro la clase, pero esta debe tener .as_view() para que django interprete que va hacer una respuesta http
+
+    ```
+    from .views import my_test_view, my_view, CarListView
+
+    urlpatterns = [
+        path("listado", CarListView.as_view()),
+    ]
+
+    ```
+
+# Django Templates
+
+1. **Mostrar una variable** en una vista html
+
+    Para esto debemos poner nuestra variable en doble llaves {{ variable }}
+
+2. **Filtros** nos permite modificar el valor de una variable
+
+    **Para usar usar filtros debemos usar un pipelie (|)** 
+
+    Por ejemplo en este caso queremos modificar una fecha y solo mostrar el mes y día
+
+    **{{ "2023-12-05" | date: "M/d" }}**
+
+    Los filtros tambien se pueden concatener, en este caso le vamos a decir que nos muestre el resultado en minuscula.
+
+    {{ "2023-12-05" | date: "M/d" | lower }}
+
+3. **Tags** Los tags permiten agregar una funcionalidad en el codigo html por ejm recorrer una lista, mostrar una url dinamica, condiccionales... etc
+
+    El sintaxis es **{% %}**, dentro de estos podemos usar if, for, url
+
+
